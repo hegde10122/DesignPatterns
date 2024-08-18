@@ -25,3 +25,13 @@ High-level modules should not depend on low-level modules; both should depend on
 
 These principles help in designing systems that are more flexible, easier to maintain, and scalable.
 
+Let us understand each of the above principles in depth.
+
+Refer to these files in the above order from one to five
+
+1) SRP: --- [SRP](https://github.com/hegde10122/DesignPatterns/blob/master/SOLID/ledger.ts)
+
+
+The explanations for each concept are included as comments in the respective files, itself. Please go through 
+them to understand each concept.
+
