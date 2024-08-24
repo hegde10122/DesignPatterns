@@ -1,4 +1,10 @@
-interface MobilePhone {
+/**
+  To understand OCP better, let us introduce an interface and a class that implements the interface,
+  just like we did with the SRP in the earlier blog.
+  
+  This time we have the MobilePhone interface with three properties and one method to describe the phone.
+
+  interface MobilePhone {
     brand: string;
     model: string;
     price: number;
@@ -22,19 +28,6 @@ class BasicMobilePhone implements MobilePhone {
       return `${this.brand} ${this.model} is priced at ₹${this.price}.`;
     }
   }
-  
-  class PhoneFilterUtils {
-    static filterByPriceRange(phones: MobilePhone[], minPrice: number, maxPrice: number): MobilePhone[] {
-      return phones.filter(phone => phone.price >= minPrice && phone.price <= maxPrice);
-    }
-  }
-
-/**
-  To understand OCP better, let us introduce an interface and a class that implements the interface,
-  just like we did with the SRP in the earlier blog.
-  
-  This time we have the MobilePhone interface with three properties and one method to describe the phone.
-
   Let us define another class that includes all filtering functions based on brand,model,price and a variety of 
   other combinations. This class is defined as PhoneFilterUtils.
 
@@ -84,34 +77,181 @@ class BasicMobilePhone implements MobilePhone {
  * 
  */
 
-  interface MobilePhone {
-    brand: string;
-    model: string;
-    price: number;
-    screenSize: number;
-    batteryCapacity: number;
-    cameraMegapixels: number;
+interface MobilePhone {
+  brand: string;
+  model: string;
+  price: number;
+  screenSize: number;
+  batteryCapacity: number;
+  cameraMegapixels: number;
 
-    // Additional method to describe the phone
-    getDescription(): string;
+  // Additional method to describe the phone
+  getDescription(): string;
 }
 
 class MobilePhone {
+  brand: string;
+  model: string;
+  price: number;
+  screenSize: number;
+  batteryCapacity: number;
+  cameraMegapixels: number;
+
   constructor(
-    public brand: string,
-    public model: string,
-    public price: number,
-    public screenSize: number,
-    public batteryCapacity: number,
-    public cameraMegapixels: number
-  ) {}
+    brand: string,
+    model: string,
+    price: number,
+    screenSize: number,
+    batteryCapacity: number,
+    cameraMegapixels: number
+  ) {
+    this.brand = brand;
+    this.model = model;
+    this.price = price;
+    this.screenSize = screenSize;
+    this.batteryCapacity = batteryCapacity;
+    this.cameraMegapixels = cameraMegapixels;
+  }
 
   getDescription(): string {
     return `${this.brand} ${this.model} - Price: ₹${this.price}, Screen: ${this.screenSize} inches, Battery: ${this.batteryCapacity}mAh, Camera: ${this.cameraMegapixels}MP`;
   }
 }
 
+class PhoneFilterUtils {
+  static filterByPriceRange(
+    phones: MobilePhone[],
+    minPrice: number,
+    maxPrice: number
+  ): MobilePhone[] {
+    return phones.filter(
+      (phone) => phone.price >= minPrice && phone.price <= maxPrice
+    );
+  }
+}
+
 /**
   From the above combinatorics calculation, we have the total possible filtering functions possible = 2^6 - 1 or 63.
-
+  Writing 63 functions is not a practical solution.  
+ So now we will explore the strategy pattern adhering to the OCP principles. Here each filter is a separate class.
  */
+
+/** 
+  Step 1: - Define interface for the MobielPhones (Already done above)
+  Step 2: - Define the MobilePhone class that implements this interface (Already done above)
+  Step 3: - create a specification interface - common for all specifications. The specifications or specs are the attributes defined in the interface. 
+  Step 4: - create concrete specifications classes for each attribute.
+  Step 5: - Create specification combinator classes (the key step) - to combine multiple specifications
+  Step 6: - Create a Filter class
+ * */
+
+interface Specification<T> {
+  isSatisfied(item: T): boolean;
+}
+
+class BrandSpecification implements Specification<MobilePhone> {
+  constructor(private brand: string) {}
+  isSatisfied(item: MobilePhone): boolean {
+    return item.brand === this.brand;
+  }
+}
+
+class ModelSpecification implements Specification<MobilePhone> {
+  constructor(private model: string) {}
+  isSatisfied(item: MobilePhone): boolean {
+    return item.model === this.model;
+  }
+}
+
+class PriceSpecification implements Specification<MobilePhone> {
+  constructor(private minPrice: number, private maxPrice: number) {}
+  isSatisfied(item: MobilePhone): boolean {
+    return item.price >= this.minPrice && item.price <= this.maxPrice;
+  }
+}
+
+class ScreenSizeSpecification implements Specification<MobilePhone> {
+  constructor(private minSize: number, private maxSize: number) {}
+  isSatisfied(item: MobilePhone): boolean {
+    return item.screenSize >= this.minSize && item.screenSize <= this.maxSize;
+  }
+}
+
+class BatteryCapacitySpecification implements Specification<MobilePhone> {
+  constructor(private minCapacity: number) {}
+  isSatisfied(item: MobilePhone): boolean {
+    return item.batteryCapacity >= this.minCapacity;
+  }
+}
+
+class CameraMegaPixelsSpecification implements Specification<MobilePhone> {
+  constructor(private minMegaPixels: number) {}
+  isSatisfied(item: MobilePhone): boolean {
+    return item.cameraMegapixels >= this.minMegaPixels;
+  }
+}
+
+class AndSpecification<T> implements Specification<T> {
+  constructor(private specs: Specification<T>[]) {}
+
+  isSatisfied(item: T): boolean {
+    return this.specs.every((spec) => spec.isSatisfied(item));
+  }
+}
+
+class OrSpecification<T> implements Specification<T> {
+  constructor(private specs: Specification<T>[]) {}
+
+  isSatisfied(item: T): boolean {
+    return this.specs.some((spec) => spec.isSatisfied(item));
+  }
+}
+
+class FilterCombination<T> {
+  filter(items: T[], spec: Specification<T>): T[] {
+    return items.filter((item) => spec.isSatisfied(item));
+  }
+}
+
+const inventory: MobilePhone[] = [
+  new MobilePhone("Apple", "iPhone 14", 79900, 6.1, 3095, 12),
+  new MobilePhone("Samsung", "Galaxy S23", 74999, 6.2, 4000, 50),
+  new MobilePhone("Google", "Pixel 7", 59999, 6.3, 4355, 50),
+  new MobilePhone("OnePlus", "9 Pro", 64990, 6.7, 4500, 48),
+  new MobilePhone("Apple", "iPhone 13", 64999, 6.1, 3095, 12),
+  new MobilePhone("Apple", "iPhone 15 Pro", 129000, 6.1, 3095, 48),
+];
+
+//create a filter instance
+const filter = new FilterCombination<MobilePhone>();
+
+//define specification
+const priceSpec = new PriceSpecification(12000, 65000);
+const modelSpec = new ModelSpecification("iPhone 13");
+const combineSpec = new AndSpecification<MobilePhone>([priceSpec, modelSpec]);
+
+//apply filter
+const filteredPhones = filter.filter(inventory, combineSpec);
+filteredPhones.forEach((phone) => {
+  console.log(phone.getDescription());
+});
+
+//Example 1: phones that are apple and have a screen size larger than 6 inches
+const appleSpec = new BrandSpecification("Apple");
+const largeScreenSpec = new ScreenSizeSpecification(6, Infinity);
+const appleAndLargeScreenSpec = new AndSpecification([
+  appleSpec,
+  largeScreenSpec,
+]);
+
+const appleAndLargeScreenPhones = filter.filter(
+  inventory,
+  appleAndLargeScreenSpec
+);
+console.log(
+  "phones that are apple and have a screen size larger than 6 inches"
+);
+
+appleAndLargeScreenPhones.forEach((phone) => {
+  console.log(phone.getDescription());
+});
