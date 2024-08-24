@@ -137,7 +137,7 @@ class PhoneFilterUtils {
  */
 
 /** 
-  Step 1: - Define interface for the MobielPhones (Already done above)
+  Step 1: - Define interface for the MobilePhones (Already done above)
   Step 2: - Define the MobilePhone class that implements this interface (Already done above)
   Step 3: - create a specification interface - common for all specifications. The specifications or specs are the attributes defined in the interface. 
   Step 4: - create concrete specifications classes for each attribute.
@@ -220,6 +220,7 @@ const inventory: MobilePhone[] = [
   new MobilePhone("OnePlus", "9 Pro", 64990, 6.7, 4500, 48),
   new MobilePhone("Apple", "iPhone 13", 64999, 6.1, 3095, 12),
   new MobilePhone("Apple", "iPhone 15 Pro", 129000, 6.1, 3095, 48),
+  new MobilePhone("Samsung", "Galaxy S21", 69999, 6.2, 4000, 50),
 ];
 
 //create a filter instance
@@ -249,9 +250,85 @@ const appleAndLargeScreenPhones = filter.filter(
   appleAndLargeScreenSpec
 );
 console.log(
-  "phones that are apple and have a screen size larger than 6 inches"
+  "\nphones that are apple and have a screen size larger than 6 inches\n"
 );
 
 appleAndLargeScreenPhones.forEach((phone) => {
   console.log(phone.getDescription());
 });
+
+//example 2: Phones priced in the range 60000 and 80000 and have a battery capacity greater than 3000 mAh.
+const priceSpec2 = new PriceSpecification(60000, 80000);
+const batteryCapacity = new BatteryCapacitySpecification(3000);
+const priceAndBatterySpec = new AndSpecification([priceSpec2, batteryCapacity]);
+const priceAndBatteryPhones = filter.filter(inventory, priceAndBatterySpec);
+
+console.log(
+  "\nPhones priced in the range 60000 and 80000 and have a battery capacity greater than 3000 mAh ---\n"
+);
+
+priceAndBatteryPhones.forEach((phone) => {
+  console.log(phone.getDescription());
+});
+
+//Example 3: Phones that are either from Samsung or have a price below 60,000
+
+const samsungSpec = new BrandSpecification("Samsung");
+const priceBelow = new PriceSpecification(-Infinity, 60000);
+const samsungOrPriceBelow60KSpec = new OrSpecification([
+  samsungSpec,
+  priceBelow,
+]);
+const samSungOrPriceBelow60KPhones = filter.filter(
+  inventory,
+  samsungOrPriceBelow60KSpec
+);
+console.log(
+  "\n\nPhones that are either from Samsung or have a price below 60,000\n"
+);
+
+samSungOrPriceBelow60KPhones.forEach((phone) => {
+  console.log(phone.getDescription());
+});
+
+//example 4: Samsung phones of Galaxy S21 model priced in the range 50000 to 70000 of screen size at least 6.2 inches
+const modelSpec2 = new ModelSpecification("Galaxy S21");
+const priceRange = new PriceSpecification(50000, 70000);
+const screenSize = new ScreenSizeSpecification(-Infinity, 6.2);
+
+const samsungPhonesSpec = new AndSpecification([
+  modelSpec2,
+  screenSize,
+  priceRange,
+  samsungSpec,
+]);
+
+const samsungPhones = filter.filter(inventory, samsungPhonesSpec);
+console.log(
+  "\n\n  Samsung phones of Galaxy S21 model priced in the range 50000 to 70000 of screen size at least 6.2 inches\n"
+);
+
+samsungPhones.forEach((phone) => {
+  console.log(phone.getDescription());
+});
+
+/***
+ * Summary --- Each specification class checks a specific attribute or condition
+ * Combinators --- AndSpecification and OrSpecification combine multiple specifications.
+ * FilterClass - FilterCombination applies the specifications to filter items.
+ *
+ * This implementation adheres to the Open/Closed principle by allowing you to extend the filtering
+ * capabilities with new specifications and combinators without modifying existing code.
+ *
+ * Conclusion:
+ *
+ * 1. Open for extension:
+ *
+ * We can extend the filtering logic by creating new specifications without modifying existing specifications
+ * or the filtering mechanism
+ * For example, if we need to add a new specification like FiveGSpecification, we simply create a new specification class for it.
+ * The existing specifications and filtering logic remain unchanged.
+ * Thus OCP is maintained with new specifications or filtering logic without needing to change the existing code. This approach minimises the
+ * risk of introducing bugs when new features or attributes are added, as the existing functionality remain untouched.
+ * Modifications are needed in terms of new classes for specifications being added and existing classes or logic remain unchanged and stable.
+ */
