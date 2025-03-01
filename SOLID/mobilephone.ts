@@ -1,4 +1,18 @@
-interface MobilePhone {
+
+  class PhoneFilterUtils {
+    static filterByPriceRange(phones: MobilePhone[], minPrice: number, maxPrice: number): MobilePhone[] {
+      return phones.filter(phone => phone.price >= minPrice && phone.price <= maxPrice);
+    }
+  }
+
+/**
+  To understand OCP better, let us introduce an interface and a class that implements the interface,
+  just like we did with the SRP in the earlier blog.
+  
+  This time we have the MobilePhone interface with three properties and one method to describe the phone.
+
+
+  interface MobilePhone {
     brand: string;
     model: string;
     price: number;
@@ -23,18 +37,6 @@ class BasicMobilePhone implements MobilePhone {
     }
   }
   
-  class PhoneFilterUtils {
-    static filterByPriceRange(phones: MobilePhone[], minPrice: number, maxPrice: number): MobilePhone[] {
-      return phones.filter(phone => phone.price >= minPrice && phone.price <= maxPrice);
-    }
-  }
-
-/**
-  To understand OCP better, let us introduce an interface and a class that implements the interface,
-  just like we did with the SRP in the earlier blog.
-  
-  This time we have the MobilePhone interface with three properties and one method to describe the phone.
-
   Let us define another class that includes all filtering functions based on brand,model,price and a variety of 
   other combinations. This class is defined as PhoneFilterUtils.
 
@@ -113,5 +115,10 @@ class MobilePhone {
 
 /**
   From the above combinatorics calculation, we have the total possible filtering functions possible = 2^6 - 1 or 63.
+  Now our PhoneFilterUtils class will have 63 such functions, in total !! 
+
+  The quick rise in the total number of functions is also called as state space explosion.
+
+  To make lives better, we will craft a nice solution that takes care of this problem.
 
  */
