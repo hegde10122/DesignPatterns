@@ -13,5 +13,8 @@ export function main() {
 
   const marker3 = factory.getmarkerPoint("school-icon", "blue");
   marker3.display(12, 33); //display the marker at position 12,33
+
+  const marker4 = factory.getmarkerPoint("garden-icon", "green");
+  marker4.display(16, 49); //display the marker at position 16,49
 }
 main();
