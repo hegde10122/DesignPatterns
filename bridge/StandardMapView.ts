@@ -11,9 +11,7 @@ export class StandardMapView extends MapView {
     }
     placeMarker(lat: number, lng: number, title: string): void {
         this.provider?.addMarker({lat,lng},title);
-        
     }
-
 }
 
 //The StandardMapView extends MapView, providing higher-level control.
